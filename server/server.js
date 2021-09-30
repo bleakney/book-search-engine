@@ -3,8 +3,35 @@ const path = require('path');
 const db = require('./config/connection');
 const routes = require('./routes');
 
+// import ApolloServer
+const { ApolloServer } = require('apollo-server-express');
+
+// import typeDefs and resolvers
+const { typeDefs, resolvers } = require('./schemas');
+const db = require('./config/connection');
+const { authMiddleware} = require('./utils/auth');
+
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// create new Apollo server and pass in schema data
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+  context: authMiddleware
+});
+
+// start Apollo server
+await server.start();
+
+// integrate Apollo server with express app as middleware
+server.applyMiddleware({ app });
+
+// log link to test GQL API
+console.log(`Use GraphQL at http://locahost:${PORT}${server.graphqlPath}`);
+
+// initialize Apollo server
+startServer();
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
