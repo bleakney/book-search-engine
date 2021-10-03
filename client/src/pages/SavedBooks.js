@@ -1,24 +1,17 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Jumbotron, Container, CardColumns, Card, Button } from 'react-bootstrap';
-import { useParams } from 'react-router-dom';
 import { GET_ME } from '../utils/queries';
 import { useQuery, useMutation } from '@apollo/client';
-import { DELETE_BOOK } from '../utils/mutations';
+import { REMOVE_BOOK } from '../utils/mutations';
 import Auth from '../utils/auth';
 import { removeBookId } from '../utils/localStorage';
 
 const SavedBooks = () => {
-  const [userData, setUserData] = useState({});
-
-  // // use this to determine if `useEffect()` hook needs to run again
   
-  const deleteBook = useMutation(DELETE_BOOK);
+  const [removeBook, { error }]= useMutation(REMOVE_BOOK);
 
-  const { username: userParam } = useParams();
-  const { loading, data } = useQuery(GET_ME, {
-    variables: { username: userParam }
-  });
-  setUserData(data?.me);
+  const { loading, data } = useQuery(GET_ME);
+  const userData = data?.me;
 
   
   // create function that accepts the book's mongo _id value as param and deletes the book from the database
@@ -30,14 +23,17 @@ const SavedBooks = () => {
     }
 
     try {
-      const response = await deleteBook(bookId, token);
+      const { bookData } = await removeBook({
+        variables: { bookId }
+      })
+      // const response = await deleteBook(bookId, token);
 
-      if (!response.ok) {
-        throw new Error('something went wrong!');
-      }
+      // if (!response.ok) {
+      //   throw new Error('something went wrong!');
+      // }
 
-      const updatedUser = await response.json();
-      setUserData(updatedUser);
+      // const updatedUser = await response.json();
+      // setUserData(updatedUser);
       // upon success, remove book's id from localStorage
       removeBookId(bookId);
     } catch (err) {
@@ -45,9 +41,9 @@ const SavedBooks = () => {
     }
   };
 
-  // if (loading) {
-  //   return <div>Loading...</div>
-  // }
+  if (loading) {
+    return <div>Loading...</div>
+  }
 
   return (
     <>
