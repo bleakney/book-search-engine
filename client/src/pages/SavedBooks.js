@@ -12,7 +12,6 @@ const SavedBooks = () => {
 
   const { loading, data } = useQuery(GET_ME);
   const userData = data?.me;
-Z
 
   
   // create function that accepts the book's mongo _id value as param and deletes the book from the database
